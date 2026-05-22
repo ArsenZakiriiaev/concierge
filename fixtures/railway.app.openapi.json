@@ -1,0 +1,51 @@
+{
+  "openapi": "3.0.0",
+  "info": { "title": "Railway API", "version": "1.0.0" },
+  "paths": {
+    "/projects": {
+      "get": {
+        "operationId": "listProjects",
+        "summary": "List all projects for the authenticated user",
+        "parameters": []
+      },
+      "post": {
+        "operationId": "createProject",
+        "summary": "Create a new project",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "teamId": { "type": "string" }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/projects/{id}/deploy": {
+      "post": {
+        "operationId": "deployProject",
+        "summary": "Trigger a deployment for a project",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }]
+      }
+    },
+    "/projects/{id}/logs": {
+      "get": {
+        "operationId": "getProjectLogs",
+        "summary": "Get recent deployment logs",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }]
+      }
+    },
+    "/projects/{id}": {
+      "delete": {
+        "operationId": "deleteProject",
+        "summary": "Delete a project — requires approval",
+        "parameters": [{ "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }]
+      }
+    }
+  }
+}
