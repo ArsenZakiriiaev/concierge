@@ -10,14 +10,16 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "hono": "^4.0.0",
-    "@hono/node-server": "^1.0.0",
     "@concierge/agent-runtime": "*",
-    "@node-rs/argon2": "^1.7.0"
+    "@hono/node-server": "^1.0.0",
+    "@node-rs/argon2": "^1.7.0",
+    "@types/pg": "^8.20.0",
+    "hono": "^4.0.0",
+    "pg": "^8.21.0"
   },
   "devDependencies": {
+    "@types/node": "^20.0.0",
     "tsup": "^8.0.0",
-    "typescript": "^5.4.0",
-    "@types/node": "^20.0.0"
+    "typescript": "^5.4.0"
   }
 }

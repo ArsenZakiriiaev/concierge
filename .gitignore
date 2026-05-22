@@ -4,3 +4,6 @@ dist/
 .env.local
 *.tsbuildinfo
 .turbo/
+.next/
+apps/registry-web/next-env.d.ts
+apps/registry-web/tsconfig.json

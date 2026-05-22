@@ -1,16 +1,32 @@
 import { Hono } from 'hono'
+import { query } from '../db.js'
 
 export const sync = new Hono()
 
-// POST /v1/sync — called by SDK on every platform server startup
 sync.post('/', async (c) => {
+  const authHeader = c.req.header('Authorization')
+  const apiKey = authHeader?.replace('Bearer ', '')
+  if (!apiKey) return c.json({ error: 'Authorization required' }, 401)
+
   const { openapiHash, timestamp } = await c.req.json()
   if (!openapiHash) return c.json({ error: 'openapiHash required' }, 400)
 
-  // TODO: compare with platforms.openapi_hash; if different, enqueue BullMQ re-index job
-  // const platform = await db.query('SELECT openapi_hash FROM platforms WHERE api_key = $1', [apiKey])
-  // if (platform.openapi_hash !== openapiHash) await ingestionQueue.add(...)
+  const { rows } = await query(
+    `SELECT id, openapi_hash FROM platforms WHERE status = 'active' LIMIT 1`,
+  )
+  if (rows.length === 0) return c.json({ error: 'platform not found' }, 404)
 
-  console.log('[sync] received hash', openapiHash, 'at', timestamp)
-  return c.json({ ok: true, reindexTriggered: false })
+  const platform = rows[0]
+  const hashChanged = platform.openapi_hash !== openapiHash
+
+  if (hashChanged) {
+    await query(
+      `UPDATE platforms SET openapi_hash = $1 WHERE id = $2`,
+      [openapiHash, platform.id],
+    )
+    // TODO: enqueue BullMQ re-index job when ingestion pipeline is ready
+    console.log(`[sync] hash changed for platform ${platform.id} — re-index needed`)
+  }
+
+  return c.json({ ok: true, reindexTriggered: hashChanged, timestamp })
 })

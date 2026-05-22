@@ -1,4 +1,6 @@
 export type { LLMProvider, ContextProvider, Tool, Result } from './interfaces.js'
 export { InPlatformAgent } from './agent.js'
+export type { PlatformConfig } from './agent.js'
 export { AnthropicProvider } from './providers/anthropic.js'
 export { StubContextProvider } from './providers/stub-context.js'
+export { buildToolsFromSpec } from './tools.js'
