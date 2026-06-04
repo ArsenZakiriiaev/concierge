@@ -7,6 +7,7 @@ export interface RolePermissions {
 
 export interface ConciergeConfig {
   apiKey: string
+  apiBaseUrl?: string
   knowledge: {
     openapi?: string
     website?: string
@@ -40,13 +41,19 @@ async function checkForChanges(config: ConciergeConfig): Promise<void> {
 
   const specText = await fetch(config.knowledge.openapi).then((r) => r.text())
   const currentHash = createHash('sha256').update(specText).digest('hex')
+  const apiBaseUrl = (config.apiBaseUrl ?? 'https://api.concierge.dev').replace(/\/$/, '')
 
-  await fetch('https://api.concierge.dev/v1/sync', {
+  await fetch(`${apiBaseUrl}/v1/sync`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${config.apiKey}`,
       'Content-Type': 'application/json',
     },
-    body: JSON.stringify({ openapiHash: currentHash, timestamp: Date.now() }),
+    body: JSON.stringify({
+      openapiHash: currentHash,
+      openapiUrl: config.knowledge.openapi,
+      website: config.knowledge.website,
+      timestamp: Date.now(),
+    }),
   })
 }

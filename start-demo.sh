@@ -9,6 +9,9 @@ if [ -z "$ANTHROPIC_API_KEY" ]; then
   exit 1
 fi
 
+export CONCIERGE_TOKEN_KEY="${CONCIERGE_TOKEN_KEY:-0123456789abcdef0123456789abcdef}"
+export CONCIERGE_API_KEY="${CONCIERGE_API_KEY:-local-demo-key}"
+
 cd "$(dirname "$0")"
 
 echo "[concierge] building..."

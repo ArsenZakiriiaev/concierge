@@ -8,12 +8,22 @@
   ],
   "scripts": {
     "build": "turbo run build",
+    "demo:local": "bash scripts/demo-local.sh",
+    "demo:reset": "bash scripts/reset-demo-db.sh",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
-    "test": "turbo run test"
+    "test": "vitest run"
   },
   "devDependencies": {
+    "postcss": "8.5.15",
     "turbo": "^2.0.0",
-    "typescript": "^5.4.0"
+    "typescript": "^5.4.0",
+    "vitest": "^4.1.8"
+  },
+  "overrides": {
+    "next@15.5.18": {
+      "postcss": "8.5.15"
+    },
+    "postcss": "8.5.15"
   }
 }

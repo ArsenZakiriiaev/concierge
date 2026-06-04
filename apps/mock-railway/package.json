@@ -1,23 +1,17 @@
 {
-  "name": "@concierge/backend",
+  "name": "@concierge/mock-railway",
   "version": "0.0.1",
   "private": true,
   "type": "module",
   "main": "./dist/index.js",
   "scripts": {
     "build": "tsup src/index.ts --format esm",
-    "dev": "tsup src/index.ts --format esm --watch & node --watch dist/index.js",
+    "dev": "tsup src/index.ts --format esm --watch",
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@concierge/agent-runtime": "*",
-    "@concierge/ingestion": "*",
     "@hono/node-server": "^1.0.0",
-    "@node-rs/argon2": "^1.7.0",
-    "@types/pg": "^8.20.0",
-    "bullmq": "^5.40.0",
-    "hono": "^4.0.0",
-    "pg": "^8.21.0"
+    "hono": "^4.0.0"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

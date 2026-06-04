@@ -33,6 +33,7 @@ concierge/
     ingestion/      openapi.ts, scraper.ts, embedder.ts. MIT OSS. ~3 files.
   apps/
     backend/        Node.js + Hono API. Registry, auth bridge, sync endpoint.
+    mock-railway/   Safe Railway-compatible demo API for hackathon flows.
     registry-web/   Next.js public registry frontend (concierge.dev/registry).
   db/
     migrations/     PostgreSQL + pgvector schema. ClickHouse schema for intent graph.
@@ -95,14 +96,76 @@ concierge/
 Start with the hardcoded JSON. Get the action layer working first. The demo only needs to
 prove the action layer works.
 
+## Claude Desktop MVP
+
+The first supported client is Claude Desktop over stdio MCP. For the repeatable
+hackathon demo, run:
+
+```bash
+npm run demo:local
+```
+
+That starts Postgres, Redis, the mock Railway API, and the Concierge backend with:
+
+- `CONCIERGE_AGENT_MODE=demo` for deterministic backend orchestration.
+- `RAILWAY_API_BASE_URL=http://localhost:4010` so no real Railway resources are touched.
+- `CONCIERGE_API_KEY=local-demo-key` for MCP/backend calls.
+
+To reset demo data between runs:
+
+```bash
+npm run demo:reset
+```
+
+Then point Claude Desktop at the MCP server:
+
+```json
+{
+  "mcpServers": {
+    "concierge": {
+      "command": "node",
+      "args": ["/home/sonny/concierge/packages/mcp-server/dist/index.js"],
+      "env": {
+        "CONCIERGE_API_URL": "http://localhost:3000",
+        "CONCIERGE_API_KEY": "local-demo-key"
+      }
+    }
+  }
+}
+```
+
+Main Claude tools:
+
+- `concierge_lookup` checks whether `railway.app` is registered.
+- `concierge_auth_status` checks whether a delegated token exists for a Claude user ID.
+- `concierge_store_token` stores that platform token encrypted with `CONCIERGE_TOKEN_KEY`.
+- `concierge_act` sends a natural-language intent to the backend-owned Railway agent.
+- `concierge_history` returns recent audited interactions across Claude chats.
+
+Suggested Claude Desktop demo path:
+
+1. `concierge_lookup` for `railway.app`.
+2. `concierge_store_token` with any demo token value and user ID `claude-demo-user`.
+3. `concierge_auth_status` for `railway.app` and `claude-demo-user`.
+4. `concierge_act` with `list my Railway projects`.
+5. `concierge_act` with `delete project demo-project` to trigger approval.
+6. Open the approval URL returned by the tool, then use `concierge_history`.
+
 ## Environment variables
 
 ```
-ANTHROPIC_API_KEY=      # default agent model + embeddings
-OPENAI_API_KEY=         # multi-model adapter + alt embeddings
+ANTHROPIC_API_KEY=      # Claude orchestration model
+ANTHROPIC_MODEL=        # optional, defaults to claude-sonnet-4-6
+OPENAI_API_KEY=         # text-embedding-3-small for pgvector retrieval
 DATABASE_URL=           # PostgreSQL with pgvector extension
+REDIS_URL=              # Redis for BullMQ reindex jobs
+CONCIERGE_TOKEN_KEY=    # 32-byte AES-256-GCM key
+CONCIERGE_API_KEY=      # shared MCP/backend key for Claude Desktop demo
+CONCIERGE_API_URL=      # MCP target backend URL
+CONCIERGE_PUBLIC_URL=   # public base URL for approval callbacks
+CONCIERGE_AGENT_MODE=   # demo for deterministic local mock flow; unset for Anthropic
+RAILWAY_API_BASE_URL=   # mock or real Railway-compatible API base URL
 CLICKHOUSE_URL=         # intent-graph analytics store
-CONCIERGE_API_KEY=      # generated per platform on registration
 ```
 
 ## Conventions

@@ -60,10 +60,26 @@ export class AnthropicProvider implements LLMProvider {
           } else {
             try {
               result = await tool.execute(block.input as Record<string, unknown>)
-              completedSteps.push(`${block.name}(${JSON.stringify(block.input)})`)
             } catch (err) {
               result = `Error: ${err instanceof Error ? err.message : String(err)}`
             }
+          }
+
+          const approval = parseApprovalResult(result)
+          if (approval) {
+            return {
+              status: 'awaiting_approval',
+              output: `Approval required for ${approval.operation}.`,
+              completedSteps,
+              pendingSteps: [approval.operation],
+              metadata: {
+                pendingOperation: approval,
+              },
+            }
+          }
+
+          if (tool) {
+            completedSteps.push(`${block.name}(${JSON.stringify(block.input)})`)
           }
 
           toolResults.push({
@@ -85,4 +101,28 @@ export class AnthropicProvider implements LLMProvider {
       }
     }
   }
+}
+
+function parseApprovalResult(result: string):
+  | { operation: string; input: Record<string, unknown> }
+  | undefined {
+  try {
+    const parsed = JSON.parse(result) as {
+      status?: string
+      operation?: string
+      input?: Record<string, unknown>
+    }
+    if (
+      parsed.status === 'awaiting_approval'
+      && typeof parsed.operation === 'string'
+      && parsed.input
+      && typeof parsed.input === 'object'
+    ) {
+      return { operation: parsed.operation, input: parsed.input }
+    }
+  } catch {
+    return undefined
+  }
+
+  return undefined
 }
